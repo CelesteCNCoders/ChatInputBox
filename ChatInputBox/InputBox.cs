@@ -20,7 +20,7 @@ public sealed class InputBox
     public void Active()
         => TextInput.OnInput += OnCharInput;
 
-    public void CleanUp()
+    public void Deactive()
     {
         TextInput.OnInput -= OnCharInput;
         buffer.Clear();
@@ -96,10 +96,11 @@ public sealed class InputBox
 
         Vector2 textSize = textRenderer.Measure(buffer.Text);
 
+        float height = textRenderer.LineHeight + 2 * Padding;
         Draw.Rect(
-            position: baseLoc,
-            width: Math.Max(textSize.X, Engine.Width / 3f * 2f) + 2 * Padding,
-            height: -(textRenderer.LineHeight + 2 * Padding),
+            position: baseLoc - Vector2.UnitY * height,
+            width: Engine.Width - 2 * Margin,
+            height: height,
             color: Color.Black with { A = 100 }
         );
 

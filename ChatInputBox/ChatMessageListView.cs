@@ -36,23 +36,26 @@ public sealed class ChatMessageListView
         foreach (var msg in messages.Reverse())
         {
             float curX = baseLoc.X + Padding;
+            if (msg.Sender is not null)
+            {
+                textRenderer.Draw(
+                    msg.Sender,
+                    new Vector2(curX, curY),
+                    new Vector2(0f, 1f),
+                    msg.SenderColor
+                );
+                curX += textRenderer.Measure(msg.Sender).X;
+                const string Separator = ": ";
+                textRenderer.Draw(
+                    Separator,
+                    new Vector2(curX, curY),
+                    new Vector2(0f, 1f),
+                    Color.White
+                );
+                curX += textRenderer.Measure(Separator).X;
+            }
             textRenderer.Draw(
-                msg.Sender,
-                new Vector2(curX, curY),
-                new Vector2(0f, 1f),
-                msg.SenderColor
-            );
-            curX += textRenderer.Measure(msg.Sender).X;
-            const string Separator = ": ";
-            textRenderer.Draw(
-                Separator,
-                new Vector2(curX, curY),
-                new Vector2(0f, 1f),
-                Color.White
-            );
-            curX += textRenderer.Measure(Separator).X;
-            textRenderer.Draw(
-                msg.Text,
+                msg.Content,
                 new Vector2(curX, curY),
                 new Vector2(0f, 1f),
                 msg.Color
