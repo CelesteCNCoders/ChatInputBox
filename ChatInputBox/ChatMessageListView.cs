@@ -9,7 +9,7 @@ public sealed class ChatMessageListView<TChatMessage> where TChatMessage : IChat
 
     public int MaxCount { get; set; } = 12;
 
-    public float ShowDuration { get; set; } = 2f;
+    public float ShowDuration { get; set; } = 8f;
 
     public bool AlwaysShow { get; set; }
 
@@ -58,7 +58,6 @@ public sealed class ChatMessageListView<TChatMessage> where TChatMessage : IChat
 
     public void Render()
     {
-        //const float LinePadding = 2f;
         const float Margin = 16f;
         const float Padding = 8f;
 
@@ -77,8 +76,8 @@ public sealed class ChatMessageListView<TChatMessage> where TChatMessage : IChat
 
             float height = textRenderer.LineHeight;
             float lineWidth = Engine.Width / 3f * 2f;
-            SnappedRect(
-                baseLoc.X - Padding,
+            DrawSnappedRect(
+                baseLoc.X,
                 curY - height,
                 lineWidth + 2 * Padding,
                 height,
@@ -117,7 +116,7 @@ public sealed class ChatMessageListView<TChatMessage> where TChatMessage : IChat
         static Color ColorWithFade(Color color, float fade)
             => color with { A = (byte)(color.A * fade) };
 
-        static void SnappedRect(float x, float y, float width, float height, Color color)
+        static void DrawSnappedRect(float x, float y, float width, float height, Color color)
         {
             float xi = MathF.Floor(x);
             float yi = MathF.Floor(y);

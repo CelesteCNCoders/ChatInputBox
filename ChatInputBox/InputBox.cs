@@ -94,8 +94,6 @@ public sealed class InputBox
         Vector2 baseLoc = new Vector2(Margin, Engine.Height - Margin);
         Vector2 textBaseLoc = baseLoc + new Vector2(Padding, -Padding);
 
-        Vector2 textSize = textRenderer.Measure(buffer.Text);
-
         float height = textRenderer.LineHeight + 2 * Padding;
         Draw.Rect(
             position: baseLoc - Vector2.UnitY * height,
