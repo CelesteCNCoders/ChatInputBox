@@ -61,21 +61,19 @@ public sealed class ChatMessageListView<TChatMessage> where TChatMessage : IChat
         const float Margin = 16f;
         const float Padding = 8f;
 
-        Vector2 baseLoc = new Vector2(Margin, Engine.Height - Margin - 64f);
+        Vector2 baseLoc = new Vector2(Margin, Engine.Height - Margin - textRenderer.LineHeight * 1.5f);
 
         float curY = baseLoc.Y - Padding;
         foreach (var (msg, _, msgFade) in Enumerable.Reverse(chatLog).Take(MaxCount))
         {
             float fade = msgFade;
             if (AlwaysShow)
-            {
                 fade = 1f;
-            }
             else if (fade <= 0f)
                 break;
 
             float height = textRenderer.LineHeight;
-            float lineWidth = Engine.Width / 3f * 2f;
+            float lineWidth = Engine.Width / 5f * 4f;
             DrawSnappedRect(
                 baseLoc.X,
                 curY - height,
