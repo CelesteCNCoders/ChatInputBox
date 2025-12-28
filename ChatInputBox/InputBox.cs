@@ -28,6 +28,12 @@ public sealed class InputBox
         buffer.Clear();
     }
 
+    public void SetText(string text)
+    {
+        buffer.SetText(text);
+        SetAlwaysShowCaretTimer();
+    }
+
     public void Update()
     {
         if (Input.MenuRight.Pressed)

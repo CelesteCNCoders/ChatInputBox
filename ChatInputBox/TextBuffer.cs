@@ -70,6 +70,12 @@ public sealed class TextBuffer
         ForwardCaret();
     }
 
+    public void SetText(string text)
+    {
+        Text = text;
+        ForwardToEndCaret();
+    }
+
     private void ClampCaretPosition()
         => CaretPosition = Math.Clamp(CaretPosition, 0, Text.Length);
 }
