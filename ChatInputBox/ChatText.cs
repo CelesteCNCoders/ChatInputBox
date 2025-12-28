@@ -37,11 +37,11 @@ public sealed class ChatText
     public ChatText(ImmutableArray<ChatTextSegment> segments)
         => Segments = segments;
 
-    public static ChatText Parse(ReadOnlySpan<char> input, Color defaultColor)
+    public static ImmutableArray<ChatTextSegment> Parse(ReadOnlySpan<char> input, Color defaultColor)
     {
         #region don't try studying something from these ai generated code
         if (input.IsEmpty)
-            return new ChatText(ImmutableArray<ChatTextSegment>.Empty);
+            return ImmutableArray<ChatTextSegment>.Empty;
 
         var segmentsBuilder = ImmutableArray.CreateBuilder<ChatTextSegment>();
 
@@ -133,7 +133,7 @@ public sealed class ChatText
 
         FlushSegment(segmentsBuilder, sb, currentStyle, currentColor);
 
-        return new ChatText(segmentsBuilder.DrainToImmutable());
+        return segmentsBuilder.DrainToImmutable();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void FlushSegment(
@@ -192,4 +192,7 @@ public sealed class ChatText
         };
         #endregion
     }
+
+    public static ChatText Create(ReadOnlySpan<char> input, Color defaultColor)
+        => new(Parse(input, defaultColor));
 }
