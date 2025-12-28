@@ -1,9 +1,9 @@
 namespace Celeste.Mod.ChatInputBox;
 
 // TODO support scrolling
-public sealed class ChatMessageListView<TChatMessage> where TChatMessage : IChatMessage
+public sealed class ChatMessageListView
 {
-    private record struct ChatItem(TChatMessage Message, float ShowTimer, float FadeOut = 1f);
+    private record struct ChatItem(ChatText Message, float ShowTimer, float FadeOut = 1f);
     private readonly List<ChatItem> chatLog;
     private readonly ITextRenderer textRenderer;
 
@@ -19,7 +19,7 @@ public sealed class ChatMessageListView<TChatMessage> where TChatMessage : IChat
         chatLog = new();
     }
 
-    public void AddChatMessage(TChatMessage chatMessage)
+    public void AddChatMessage(ChatText chatMessage)
     {
         chatLog.Add(new(chatMessage, ShowDuration));
     }
@@ -72,41 +72,60 @@ public sealed class ChatMessageListView<TChatMessage> where TChatMessage : IChat
             else if (fade <= 0f)
                 break;
 
-            float height = textRenderer.LineHeight;
+            float lineHeight = textRenderer.LineHeight;
             float lineWidth = Engine.Width / 5f * 4f;
             DrawSnappedRect(
                 baseLoc.X,
-                curY - height,
+                curY - lineHeight,
                 lineWidth + 2 * Padding,
-                height,
+                lineHeight,
                 ColorWithFade(Color.Black, fade * 0.5f)
             );
 
             float curX = baseLoc.X + Padding;
-            if (msg.Sender is not null)
+            foreach (var seg in msg.Segments)
             {
-                textRenderer.Draw(
-                    msg.Sender,
-                    new Vector2(curX, curY),
-                    new Vector2(0f, 1f),
-                    ColorWithFade(msg.SenderColor, fade)
-                );
-                curX += textRenderer.Measure(msg.Sender).X;
-                const string Separator = ": ";
-                textRenderer.Draw(
-                    Separator,
-                    new Vector2(curX, curY),
-                    new Vector2(0f, 1f),
-                    ColorWithFade(Color.White, fade)
-                );
-                curX += textRenderer.Measure(Separator).X;
+                Vector2 size = textRenderer.Measure(seg.Text);
+
+                if (!seg.Style.HasFlag(ChatTextStyle.Outline))
+                {
+                    textRenderer.Draw(
+                        seg.Text,
+                        new Vector2(curX, curY),
+                        new Vector2(0f, 1f),
+                        ColorWithFade(seg.Color, fade)
+                    );
+                }
+                else
+                {
+                    textRenderer.DrawOutline(
+                        seg.Text,
+                        new Vector2(curX, curY),
+                        new Vector2(0f, 1f),
+                        ColorWithFade(seg.Color, fade)
+                    );
+                }
+
+                if (seg.Style.HasFlag(ChatTextStyle.Underscore))
+                {
+                    Draw.Line(
+                        new Vector2(curX, curY),
+                        new Vector2(curX + size.X, curY),
+                        seg.Color
+                    );
+                }
+
+                if (seg.Style.HasFlag(ChatTextStyle.Strikethrough))
+                {
+                    Draw.Line(
+                        new Vector2(curX, curY - lineHeight / 2f),
+                        new Vector2(curX + size.X, curY - lineHeight / 2),
+                        seg.Color
+                    );
+                }
+
+                curX += size.X;
             }
-            textRenderer.Draw(
-                msg.Content,
-                new Vector2(curX, curY),
-                new Vector2(0f, 1f),
-                ColorWithFade(msg.Color, fade)
-            );
 
             curY -= textRenderer.LineHeight;
         }

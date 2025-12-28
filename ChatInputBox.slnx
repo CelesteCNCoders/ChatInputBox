@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="ChatInputBox.UnitTest/ChatInputBox.UnitTest.csproj" Id="d14e5c0c-8ff2-46b4-b9da-4cd39e23a0ab" />
   <Project Path="ChatInputBox/ChatInputBox.msbuildproj" Type="13b669be-bb05-4ddf-9536-439f39a36129" />
   <Project Path="ChatInputBoxExample/ChatInputBoxExample.csproj" />
 </Solution>

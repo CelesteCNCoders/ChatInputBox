@@ -1,14 +1,16 @@
+using Celeste.Mod.ChatInputBox;
 using Microsoft.Xna.Framework.Input;
 
 namespace Celeste.Mod.ChatInputBoxExample;
 
 public sealed class ChatInputBoxExampleModule : EverestModule
 {
-    private static List<ChatMessage> msgs =
+    private static readonly List<ChatText> msgs =
     [
-        new("sap", "Hello!"),
-        new("voidsd", "I'm yoidsd"),
-        new("bot", "Ha! Welcome to MiaoNet!")
+        ChatText.Parse(@"\esap\r: \uHello!", Color.White),
+        ChatText.Parse(@"\evoidsd\r: \sI'm yoidsd", Color.White),
+        ChatText.Parse(@"\ebot:\r \bHa! Welcome to MiaoNet!", Color.White),
+        ChatText.Parse(@"\etest:\r \o\0Outlined\r\uUnderscored\sAlsoStrikeThrough\r\#badff4Color of #badff4\\Escape", Color.White),
     ];
 
     public static ChatInputBoxExampleModule Instance { get; private set; }

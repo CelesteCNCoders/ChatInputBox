@@ -9,4 +9,6 @@ public interface ITextRenderer
     public Vector2 Measure(string text);
 
     public void Draw(string text, Vector2 position, Vector2 justify, Color color);
+
+    public void DrawOutline(string text, Vector2 position, Vector2 justify, Color color);
 }

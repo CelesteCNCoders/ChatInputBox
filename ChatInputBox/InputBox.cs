@@ -18,7 +18,9 @@ public sealed class InputBox
     }
 
     public void Active()
-        => TextInput.OnInput += OnCharInput;
+    {
+        TextInput.OnInput += OnCharInput;
+    }
 
     public void Deactive()
     {
