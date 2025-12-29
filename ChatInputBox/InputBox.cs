@@ -1,3 +1,5 @@
+using Microsoft.Xna.Framework.Input;
+
 namespace Celeste.Mod.ChatInputBox;
 
 public sealed class InputBox
@@ -36,13 +38,13 @@ public sealed class InputBox
 
     public void Update()
     {
-        if (Input.MenuRight.Pressed)
+        if (MInput.Keyboard.Pressed(Keys.Right))
         {
             Input.MenuRight.ConsumePress();
             if (buffer.ForwardCaret())
                 SetAlwaysShowCaretTimer();
         }
-        else if (Input.MenuLeft.Pressed)
+        else if (MInput.Keyboard.Pressed(Keys.Left))
         {
             Input.MenuLeft.ConsumePress();
             if (buffer.BackwardCaret())

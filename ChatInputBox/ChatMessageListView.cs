@@ -1,17 +1,24 @@
 namespace Celeste.Mod.ChatInputBox;
 
-// TODO support scrolling
 public sealed class ChatMessageListView
 {
     private record struct ChatItem(ChatText Message, float ShowTimer, float FadeOut = 1f);
     private readonly List<ChatItem> chatLog;
     private readonly ITextRenderer textRenderer;
 
-    public int MaxCount { get; set; } = 12;
+    public int IdleMaxCount { get; set; } = 12;
+
+    public int ActiveMaxCount { get; set; } = 18;
 
     public float ShowDuration { get; set; } = 8f;
 
-    public bool AlwaysShow { get; set; }
+    public bool Active { get; set; }
+
+    public float Scroll
+    {
+        get;
+        set => field = ClampScrollValue(value);
+    }
 
     public ChatMessageListView(ITextRenderer textRenderer)
     {
@@ -28,6 +35,9 @@ public sealed class ChatMessageListView
     {
         chatLog.Clear();
     }
+
+    public float ClampScrollValue(float value)
+        => Math.Clamp(value, 0f, Math.Max((chatLog.Count - ActiveMaxCount) * textRenderer.LineHeight, 0));
 
     public void Update()
     {
@@ -58,80 +68,135 @@ public sealed class ChatMessageListView
 
     public void Render()
     {
+        if (chatLog.Count == 0)
+            return;
+
         const float Margin = 16f;
         const float Padding = 8f;
 
-        Vector2 baseLoc = new Vector2(Margin, Engine.Height - Margin - textRenderer.LineHeight * 1.5f);
+        Vector2 baseLoc = new Vector2(Margin, Engine.Height - Margin - textRenderer.LineHeight * 1.5f - Padding);
 
-        float curY = baseLoc.Y - Padding;
-        foreach (var (msg, _, msgFade) in Enumerable.Reverse(chatLog).Take(MaxCount))
+        float curY = baseLoc.Y;
+        int firstVisibleMessageIndex = chatLog.Count - 1;
+        if (Active)
         {
-            float fade = msgFade;
-            if (AlwaysShow)
-                fade = 1f;
-            else if (fade <= 0f)
-                break;
+            curY += Scroll;
 
-            float lineHeight = textRenderer.LineHeight;
-            float lineWidth = Engine.Width / 5f * 4f;
-            DrawSnappedRect(
-                baseLoc.X,
-                curY - lineHeight,
-                lineWidth + 2 * Padding,
-                lineHeight,
-                ColorWithFade(Color.Black, fade * 0.5f)
-            );
-
-            float curX = baseLoc.X + Padding;
-            foreach (var seg in msg.Segments)
+            for (int i = chatLog.Count - 1; i >= 0; i--)
             {
-                Vector2 size = textRenderer.Measure(seg.Text);
-
-                if (!seg.Style.HasFlag(ChatTextStyle.Outline))
+                if (curY > baseLoc.Y)
                 {
-                    textRenderer.Draw(
-                        seg.Text,
-                        new Vector2(curX, curY),
-                        new Vector2(0f, 1f),
-                        ColorWithFade(seg.Color, fade)
-                    );
+                    curY -= textRenderer.LineHeight;
+                    continue;
                 }
-                else
-                {
-                    textRenderer.DrawOutline(
-                        seg.Text,
-                        new Vector2(curX, curY),
-                        new Vector2(0f, 1f),
-                        ColorWithFade(seg.Color, fade)
-                    );
-                }
-
-                if (seg.Style.HasFlag(ChatTextStyle.Underscore))
-                {
-                    Draw.Line(
-                        new Vector2(curX, curY),
-                        new Vector2(curX + size.X, curY),
-                        seg.Color
-                    );
-                }
-
-                if (seg.Style.HasFlag(ChatTextStyle.Strikethrough))
-                {
-                    Draw.Line(
-                        new Vector2(curX, curY - lineHeight / 2f),
-                        new Vector2(curX + size.X, curY - lineHeight / 2),
-                        seg.Color
-                    );
-                }
-
-                curX += size.X;
+                firstVisibleMessageIndex = i;
+                break;
             }
+        }
+
+        if (firstVisibleMessageIndex + 1 < chatLog.Count)
+        {
+            float pCurY = curY + textRenderer.LineHeight;
+            float alpha = 1f - (pCurY - baseLoc.Y) / textRenderer.LineHeight;
+            DrawSingleMessage(chatLog[firstVisibleMessageIndex + 1], baseLoc.X, pCurY, alpha);
+        }
+
+        int maxCount = Active ? ActiveMaxCount : IdleMaxCount;
+        int nextInvisibleMessageIndex = -1;
+        for (int i = firstVisibleMessageIndex; i >= 0; i--)
+        {
+            if (curY < baseLoc.Y - maxCount * textRenderer.LineHeight)
+            {
+                nextInvisibleMessageIndex = i;
+                break;
+            }
+
+            if (!DrawSingleMessage(chatLog[i], baseLoc.X, curY, 1f))
+                break;
 
             curY -= textRenderer.LineHeight;
         }
 
+        if (nextInvisibleMessageIndex > 0)
+        {
+            float alpha = 1f - ((baseLoc.Y - maxCount * textRenderer.LineHeight) - curY) / textRenderer.LineHeight;
+            DrawSingleMessage(chatLog[nextInvisibleMessageIndex], baseLoc.X, curY, alpha);
+        }
+    }
+
+    private bool DrawSingleMessage(ChatItem item, float x, float curY, float alpha)
+    {
+        const float Padding = 8f;
+
+        var (msg, _, msgFade) = item;
+
+        float fade = msgFade;
+        if (Active)
+            fade = 1f;
+        else if (fade <= 0f)
+            return false;
+
+        fade *= alpha;
+
+        float lineHeight = textRenderer.LineHeight;
+        float lineWidth = Engine.Width / 5f * 4f;
+        DrawSnappedRect(
+            x,
+            curY - lineHeight,
+            lineWidth + 2 * Padding,
+            lineHeight,
+            ColorWithFade(Color.Black, fade * 0.5f)
+        );
+
+        float curX = x + Padding;
+        foreach (var seg in msg.Segments)
+        {
+            Vector2 size = textRenderer.Measure(seg.Text);
+
+            if (!seg.Style.HasFlag(ChatTextStyle.Outline))
+            {
+                textRenderer.Draw(
+                    seg.Text,
+                    new Vector2(curX, curY),
+                    new Vector2(0f, 1f),
+                    ColorWithFade(seg.Color, fade)
+                );
+            }
+            else
+            {
+                textRenderer.DrawOutline(
+                    seg.Text,
+                    new Vector2(curX, curY),
+                    new Vector2(0f, 1f),
+                    ColorWithFade(seg.Color, fade)
+                );
+            }
+
+            if (seg.Style.HasFlag(ChatTextStyle.Underscore))
+            {
+                Draw.Line(
+                    new Vector2(curX, curY),
+                    new Vector2(curX + size.X, curY),
+                    ColorWithFade(seg.Color, fade)
+                );
+            }
+
+            if (seg.Style.HasFlag(ChatTextStyle.Strikethrough))
+            {
+                Draw.Line(
+                    new Vector2(curX, curY - lineHeight / 2f),
+                    new Vector2(curX + size.X, curY - lineHeight / 2),
+                    ColorWithFade(seg.Color, fade)
+                );
+            }
+
+            curX += size.X;
+        }
+
+        return true;
+
         static Color ColorWithFade(Color color, float fade)
-            => color with { A = (byte)(color.A * fade) };
+            => color * fade;//color with { A = (byte)(color.A * fade) };
 
         static void DrawSnappedRect(float x, float y, float width, float height, Color color)
         {
