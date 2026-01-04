@@ -6,6 +6,10 @@ public sealed class ChatMessageListView
     private readonly List<ChatItem> chatLog;
     private readonly ITextRenderer textRenderer;
 
+    public float BackgroundOpacity { get; set; } = 0.5f;
+
+    public float TextOpacity { get; set; } = 1f;
+
     public int IdleMaxCount { get; set; } = 12;
 
     public int ActiveMaxCount { get; set; } = 18;
@@ -116,7 +120,6 @@ public sealed class ChatMessageListView
 
             curY -= textRenderer.LineHeight;
         }
-
         if (nextInvisibleMessageIndex > 0)
         {
             float alpha = 1f - ((baseLoc.Y - maxCount * textRenderer.LineHeight) - curY) / textRenderer.LineHeight;
@@ -139,13 +142,13 @@ public sealed class ChatMessageListView
         fade *= alpha;
 
         float lineHeight = textRenderer.LineHeight;
-        float lineWidth = Engine.Width / 5f * 4f;
+        float lineWidth = MeasureSingleMessage(msg);
         DrawSnappedRect(
             x,
             curY - lineHeight,
             lineWidth + 2 * Padding,
             lineHeight,
-            ColorWithFade(Color.Black, fade * 0.5f)
+            Color.Black * fade * BackgroundOpacity
         );
 
         float curX = x + Padding;
@@ -159,7 +162,7 @@ public sealed class ChatMessageListView
                     seg.Text,
                     new Vector2(curX, curY),
                     new Vector2(0f, 1f),
-                    ColorWithFade(seg.Color, fade)
+                    seg.Color * fade * TextOpacity
                 );
             }
             else
@@ -168,7 +171,7 @@ public sealed class ChatMessageListView
                     seg.Text,
                     new Vector2(curX, curY),
                     new Vector2(0f, 1f),
-                    ColorWithFade(seg.Color, fade)
+                    seg.Color * fade * TextOpacity
                 );
             }
 
@@ -177,7 +180,7 @@ public sealed class ChatMessageListView
                 Draw.Line(
                     new Vector2(curX, curY),
                     new Vector2(curX + size.X, curY),
-                    ColorWithFade(seg.Color, fade)
+                    seg.Color * fade * TextOpacity
                 );
             }
 
@@ -186,17 +189,13 @@ public sealed class ChatMessageListView
                 Draw.Line(
                     new Vector2(curX, curY - lineHeight / 2f),
                     new Vector2(curX + size.X, curY - lineHeight / 2),
-                    ColorWithFade(seg.Color, fade)
+                    seg.Color * fade * TextOpacity
                 );
             }
 
             curX += size.X;
         }
-
         return true;
-
-        static Color ColorWithFade(Color color, float fade)
-            => color * fade;//color with { A = (byte)(color.A * fade) };
 
         static void DrawSnappedRect(float x, float y, float width, float height, Color color)
         {
@@ -208,4 +207,7 @@ public sealed class ChatMessageListView
             Draw.Rect(xi, yi, wi, hi, color);
         }
     }
+
+    private float MeasureSingleMessage(ChatText chatText)
+        => chatText.Segments.Aggregate(0f, (v, seg) => v += textRenderer.Measure(seg.Text).X);
 }
