@@ -62,6 +62,15 @@ public sealed class InputBox
                 SetAlwaysShowCaretTimer();
         }
 
+        bool ctrlPressing = MInput.Keyboard.Check(Keys.LeftControl) ||
+            MInput.Keyboard.Check(Keys.RightControl);
+
+        if (MInput.Keyboard.Pressed(Keys.V) && ctrlPressing)
+        {
+            string text = TextInput.GetClipboardText();
+            buffer.InputString(text);
+        }
+
         if (caretTimer > 0f)
         {
             caretTimer -= Engine.RawDeltaTime;

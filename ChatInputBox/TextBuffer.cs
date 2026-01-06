@@ -32,8 +32,14 @@ public sealed class TextBuffer
     public bool ForwardCaret()
         => SetCaretPositionAndClamp(CaretPosition + 1);
 
+    public bool ForwardCaret(int amount)
+        => SetCaretPositionAndClamp(CaretPosition + amount);
+
     public bool BackwardCaret()
         => SetCaretPositionAndClamp(CaretPosition - 1);
+
+    public bool BackwardCaret(int amount)
+        => SetCaretPositionAndClamp(CaretPosition - amount);
 
     public bool Backspace()
     {
@@ -68,6 +74,13 @@ public sealed class TextBuffer
         string newText = string.Concat(Text.AsSpan(0, CaretPosition), [chr], Text.AsSpan(CaretPosition));
         Text = newText;
         ForwardCaret();
+    }
+
+    public void InputString(string text)
+    {
+        string newText = string.Concat(Text.AsSpan(0, CaretPosition), text, Text.AsSpan(CaretPosition));
+        Text = newText;
+        ForwardCaret(text.Length);
     }
 
     public void SetText(string text)
