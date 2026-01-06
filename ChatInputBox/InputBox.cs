@@ -11,7 +11,18 @@ public sealed class InputBox
     private bool showCaret = true;
     private float caretTimer = CaretBlinkInterval;
 
+    private static readonly VirtualButton leftButton;
+    private static readonly VirtualButton rightButton;
+
     public string Text => buffer.Text;
+
+    static InputBox()
+    {
+        leftButton = new(new Binding() { Keyboard = [Keys.Left] }, Input.Gamepad, 0f, 0.4f);
+        leftButton.SetRepeat(0.4f, 0.05f);
+        rightButton = new(new Binding() { Keyboard = [Keys.Right] }, Input.Gamepad, 0f, 0.4f);
+        rightButton.SetRepeat(0.4f, 0.05f);
+    }
 
     public InputBox(ITextRenderer textRenderer)
     {
@@ -38,15 +49,15 @@ public sealed class InputBox
 
     public void Update()
     {
-        if (MInput.Keyboard.Pressed(Keys.Right))
+        if (rightButton.Pressed)
         {
-            Input.MenuRight.ConsumePress();
+            rightButton.ConsumePress();
             if (buffer.ForwardCaret())
                 SetAlwaysShowCaretTimer();
         }
-        else if (MInput.Keyboard.Pressed(Keys.Left))
+        else if (leftButton.Pressed)
         {
-            Input.MenuLeft.ConsumePress();
+            leftButton.ConsumePress();
             if (buffer.BackwardCaret())
                 SetAlwaysShowCaretTimer();
         }
