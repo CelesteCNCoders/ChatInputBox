@@ -68,7 +68,9 @@ public sealed class InputBox
         if (MInput.Keyboard.Pressed(Keys.V) && ctrlPressing)
         {
             string text = TextInput.GetClipboardText();
-            buffer.InputString(text);
+            string textNoControl = new string(text.Where(c => !char.IsControl(c)).ToArray());
+            if (!string.IsNullOrEmpty(textNoControl))
+                buffer.InputString(textNoControl);
         }
 
         if (caretTimer > 0f)
