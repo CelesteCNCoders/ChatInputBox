@@ -30,12 +30,12 @@ public sealed class InputBox
         this.textRenderer = textRenderer;
     }
 
-    public void Active()
+    public void Activate()
     {
         TextInput.OnInput += OnCharInput;
     }
 
-    public void Deactive()
+    public void Deactivate()
     {
         TextInput.OnInput -= OnCharInput;
         buffer.Clear();

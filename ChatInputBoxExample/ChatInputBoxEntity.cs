@@ -101,18 +101,18 @@ public sealed class ChatInputBoxEntity : Entity
         lastMouseScroll = Mouse.GetState().ScrollWheelValue;
     }
 
-    public new void Active()
+    public void Activate()
     {
         active = true;
-        inputBox.Active();
+        inputBox.Activate();
         msgListView.Active = true;
         Scene.Paused = true;
     }
 
-    public void Deactive()
+    public void Deactivate()
     {
         active = false;
-        inputBox.Deactive();
+        inputBox.Deactivate();
         msgListView.Scroll = 0f;
         msgListView.Active = false;
         scroll = 0f;
@@ -139,18 +139,18 @@ public sealed class ChatInputBoxEntity : Entity
             if (MInput.Keyboard.Pressed(Keys.Enter))
             {
                 msgListView.AddChatMessage(ChatText.Create(inputBox.Text, Color.White));
-                Deactive();
+                Deactivate();
                 MInput.VirtualInputs.ForEach(i => (i as VirtualButton)?.ConsumePress());
             }
             else if (MInput.Keyboard.Pressed(Keys.Escape))
             {
-                Deactive();
+                Deactivate();
                 MInput.VirtualInputs.ForEach(i => (i as VirtualButton)?.ConsumePress());
             }
         }
         else if (MInput.Keyboard.Pressed(Keys.T))
         {
-            Active();
+            Activate();
         }
     }
 
